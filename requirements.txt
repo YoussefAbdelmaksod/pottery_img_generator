@@ -1,0 +1,9 @@
+# Core dependencies for pottery image generation
+
+torch
+transformers
+accelerate
+huggingface_hub
+diffusers[torch]
+safetensors
+Pillow

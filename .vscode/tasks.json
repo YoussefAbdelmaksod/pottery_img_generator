@@ -1,0 +1,33 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Install requirements",
+            "type": "shell",
+            "command": "pip install -r requirements.txt",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Pottery Generator",
+            "type": "shell",
+            "command": "python main.py --prompt 'A Japanese Raku style vase, studio lighting' --style 'Japanese Raku' --material 'glazed ceramic' --perspective 'side view' --output pottery.png",
+            "group": "test",
+            "problemMatcher": []
+        },
+        {
+            "label": "Curate Pottery Dataset",
+            "type": "shell",
+            "command": "python -c 'from data.dataset_utils import curate_pottery_dataset; curate_pottery_dataset(\"data/raw\", \"data/processed\")'",
+            "group": "none",
+            "problemMatcher": []
+        },
+        {
+            "label": "LoRA Fine-tuning",
+            "type": "shell",
+            "command": "python -c 'from models.lora_utils import finetune_with_lora; finetune_with_lora(\"runwayml/stable-diffusion-v1-5\", \"data/processed\", \"models/lora\", {})'",
+            "group": "none",
+            "problemMatcher": []
+        }
+    ]
+}
