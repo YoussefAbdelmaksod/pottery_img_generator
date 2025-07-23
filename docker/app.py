@@ -21,27 +21,29 @@ def load_model():
     # Load base Stable Diffusion model
     model_id = "runwayml/stable-diffusion-v1-5"  # or your base model
     
+    # Use CPU-compatible settings for Hugging Face Spaces
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    
     pipe = StableDiffusionPipeline.from_pretrained(
         model_id,
-        torch_dtype=torch.float16,
+        torch_dtype=torch_dtype,
         safety_checker=None,
         requires_safety_checker=False
     )
     
-    # Load your LoRA weights
-    pipe.load_lora_weights("./lora_weights")  # Path to your LoRA files
+    # Load your LoRA weights - update path to match your structure
+    pipe.load_lora_weights("./lora-output")  # Path to your LoRA files
     
     # Use DPM solver for faster generation
     pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
     
-    # Move to GPU if available
-    if torch.cuda.is_available():
-        pipe = pipe.to("cuda")
-        print("Using GPU for inference")
-    else:
-        print("Using CPU for inference")
+    # Move to appropriate device
+    pipe = pipe.to(device)
+    print(f"Using {device} for inference")
     
-    pipe.enable_memory_efficient_attention()
+    if device == "cuda":
+        pipe.enable_memory_efficient_attention()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -70,8 +72,20 @@ def generate_image():
         if seed is not None:
             torch.manual_seed(seed)
         
-        # Generate image
-        with torch.autocast("cuda" if torch.cuda.is_available() else "cpu"):
+        # Generate image with device-appropriate autocast
+        device_type = "cuda" if torch.cuda.is_available() else "cpu"
+        if device_type == "cuda":
+            with torch.autocast(device_type):
+                image = pipe(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width,
+                    height=height
+                ).images[0]
+        else:
+            # CPU inference without autocast
             image = pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -119,8 +133,20 @@ def generate_image_file():
         if seed is not None:
             torch.manual_seed(seed)
         
-        # Generate image
-        with torch.autocast("cuda" if torch.cuda.is_available() else "cpu"):
+        # Generate image with device-appropriate autocast
+        device_type = "cuda" if torch.cuda.is_available() else "cpu"
+        if device_type == "cuda":
+            with torch.autocast(device_type):
+                image = pipe(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    num_inference_steps=num_inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=width,
+                    height=height
+                ).images[0]
+        else:
+            # CPU inference without autocast
             image = pipe(
                 prompt=prompt,
                 negative_prompt=negative_prompt,
@@ -154,7 +180,17 @@ def batch_generate():
         
         results = []
         for i, prompt in enumerate(prompts):
-            with torch.autocast("cuda" if torch.cuda.is_available() else "cpu"):
+            device_type = "cuda" if torch.cuda.is_available() else "cpu"
+            if device_type == "cuda":
+                with torch.autocast(device_type):
+                    image = pipe(
+                        prompt=prompt,
+                        negative_prompt=negative_prompt,
+                        num_inference_steps=num_inference_steps,
+                        guidance_scale=guidance_scale
+                    ).images[0]
+            else:
+                # CPU inference without autocast
                 image = pipe(
                     prompt=prompt,
                     negative_prompt=negative_prompt,
@@ -180,4 +216,4 @@ if __name__ == '__main__':
     print("Loading model...")
     load_model()
     print("Model loaded successfully!")
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=7860)

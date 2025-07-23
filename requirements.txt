@@ -1,14 +1,12 @@
 # Core dependencies for pottery image generation
-
-torch
-transformers
-accelerate
-huggingface_hub
-diffusers[torch]
-safetensors
-Pillow
-googletrans
-gradio
+torch>=1.13.0
+torchvision>=0.14.0
+diffusers>=0.21.0
+transformers>=4.21.0
 peft>=0.4.0
-flask
-flask-cors
+flask==2.3.3
+flask-cors==4.0.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+Pillow>=9.0.0
+huggingface_hub>=0.16.0

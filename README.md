@@ -1,131 +1,308 @@
-# ---
+---
 title: Pottery Image Generator
-emoji: "🪴"
-colorFrom: indigo
-colorTo: blue
-sdk: gradio
-sdk_version: "4.16.0"
-app_file: app.py
+emoji: 🏺
+colorFrom: red
+colorTo: yellow
+sdk: docker
 pinned: false
-# ---
-# Pottery Image Generation with Stable Diffusion
-
-This project leverages state-of-the-art text-to-image diffusion models (Stable Diffusion and variants) to generate high-resolution, realistic images of pottery. It is designed for designers, archaeologists, educators, artists, and 3D modelers.
-
+app_port: 7860
 ---
 
-## Project Structure
+# 🏺 Pottery Image Generator
 
+A fine-tuned Stable Diffusion model specialized in generating high-quality pottery and ceramic images. This model uses LoRA (Low-Rank Adaptation) to create beautiful, detailed pottery designs based on text prompts.
+
+## 🚀 Quick Start
+
+### Public Access
+If the Space is public, you can directly access the API:
+```bash
+curl https://youssefabdelmaksod-pottery-img-generator.hf.space/api/health
 ```
-project-root/
-├── main.py                      # CLI entry point for image generation
-├── pipeline/
-│   └── text2img.py              # Core text-to-image pipeline
-├── data/
-│   ├── download_pottery_dataset.py   # Download public pottery datasets
-│   ├── dataset_utils.py              # Curation, preprocessing, CSV export
-│   ├── augment_pottery_dataset.py    # Data augmentation
-│   ├── split_pottery_dataset.py      # Train/val/test split
-│   ├── dataset_stats.py              # Dataset statistics and quality checks
-│   └── prepare_for_diffusers.py      # Prepare dataset for LoRA training
-├── models/
-│   ├── lora_utils.py                 # LoRA fine-tuning utilities (custom)
-│   └── train_lora.py                 # (Legacy) LoRA training script
-├── app.py                       # Web UI for image generation (Gradio)
-├── requirements.txt             # Core dependencies
-├── requirements-dev.txt         # Dev/test dependencies
-├── train_dreambooth_lora.py     # Official Hugging Face LoRA training script
-├── .github/
-│   └── copilot-instructions.md  # Copilot workspace instructions
-├── .vscode/
-│   └── tasks.json               # VS Code tasks
-├── LICENSE
-├── README.md
-└── tests/
-    └── test_text2img.py         # Basic pipeline test
+
+### Private Access (Authentication Required)
+If the Space is private, include your Hugging Face token:
+```bash
+curl -H "Authorization: Bearer YOUR_HF_TOKEN" \
+  https://youssefabdelmaksod-pottery-img-generator.hf.space/api/health
+```
+
+## 📖 API Documentation
+
+### Base URL
+```
+https://youssefabdelmaksod-pottery-img-generator.hf.space
+```
+
+### Authentication
+For private Spaces, include the authorization header:
+```
+Authorization: Bearer YOUR_HUGGING_FACE_TOKEN
 ```
 
 ---
 
-## Features
-- Generate pottery images from natural language prompts
-- Support for vessel types, materials, textures, and cultural styles
-- Style consistency (e.g., Japanese Raku, Greek, Egyptian, etc.)
-- Prompt engineering and LoRA fine-tuning ready
-- Dataset curation, augmentation, splitting, and statistics utilities
-- Web UI for non-technical users
-- Basic tests and dev setup
+## 🔗 API Endpoints
+
+### 1. Root Endpoint
+**GET** `/`
+
+Returns API information and available endpoints.
+
+**Response:**
+```json
+{
+  "message": "Pottery Image Generator API",
+  "endpoints": {
+    "health": "/api/health",
+    "generate": "/api/generate (POST)",
+    "generate_file": "/api/generate_file (POST)",
+    "batch_generate": "/api/batch_generate (POST)"
+  },
+  "status": "running"
+}
+```
 
 ---
 
-## Getting Started
+### 2. Health Check
+**GET** `/api/health`
 
-1. **Set up environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
-2. **Download or curate a dataset**
-   - Download: `python data/download_pottery_dataset.py`
-   - Curate: `python data/dataset_utils.py` (see script for usage)
-   - Augment: `python data/augment_pottery_dataset.py`
-   - Split: `python data/split_pottery_dataset.py`
-   - Stats: `python data/dataset_stats.py`
-3. **Generate images**
-   ```bash
-   python main.py --prompt "A Japanese Raku style vase, studio lighting" --style "Japanese Raku" --material "glazed ceramic" --perspective "side view" --output pottery.png
-   ```
-4. **Web UI**
-   ```bash
-   python app.py
-   ```
-5. **LoRA Fine-Tuning (Cloud recommended for low VRAM)**
-   - Prepare: `python data/prepare_for_diffusers.py --input_dir data/pottery --output_dir data/diffusers_pottery`
-   - Download official script: `wget https://raw.githubusercontent.com/huggingface/diffusers/main/examples/dreambooth/train_dreambooth_lora.py`
-   - Run training (see README for recommended command)
+Check the API status and model readiness.
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "model_loaded": true,
+  "device": "cpu",
+  "torch_version": "2.7.1+cu126",
+  "lora_loaded": true
+}
+```
 
 ---
 
-## CLI Options (main.py)
-- `--prompt`: Text prompt for pottery image (required)
-- `--output`: Output image file (default: output.png)
-- `--model`: Model name or path (default: runwayml/stable-diffusion-v1-5)
-- `--style`: Pottery style (e.g., Japanese Raku, Greek)
-- `--material`: Material/texture (e.g., glazed ceramic, earthenware)
-- `--perspective`: Camera perspective (e.g., side view, top-down)
-- `--guidance_scale`: Diffusion guidance scale (default: 7.5)
-- `--seed`: Random seed for reproducibility
-- `--negative_prompt`: Negative prompt for image generation
+### 3. Generate Image (Base64)
+**POST** `/api/generate`
+
+Generate a pottery image and return it as base64-encoded data.
+
+**Request Body:**
+```json
+{
+  "prompt": "a beautiful ceramic vase with blue patterns",
+  "negative_prompt": "blurry, bad quality, distorted",
+  "steps": 20,
+  "guidance_scale": 7.5,
+  "width": 512,
+  "height": 512,
+  "seed": 42
+}
+```
+
+**Parameters:**
+- `prompt` (string, required): Description of the pottery you want to generate
+- `negative_prompt` (string, optional): What to avoid in the image (default: "blurry, bad quality, distorted")
+- `steps` (integer, optional): Number of inference steps (default: 20, range: 1-50)
+- `guidance_scale` (float, optional): How closely to follow the prompt (default: 7.5, range: 1-20)
+- `width` (integer, optional): Image width in pixels (default: 512)
+- `height` (integer, optional): Image height in pixels (default: 512)
+- `seed` (integer, optional): Random seed for reproducible results
+
+**Response:**
+```json
+{
+  "prompt": "a beautiful ceramic vase with blue patterns",
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgA...",
+  "seed": 42,
+  "parameters": {
+    "steps": 20,
+    "guidance_scale": 7.5,
+    "width": 512,
+    "height": 512
+  }
+}
+```
 
 ---
 
-## Portability & Collaboration
-- **Yes, you can share this project with a partner.**
-- All code, scripts, and instructions are included for setup, training, and usage on another machine.
-- For LoRA fine-tuning, your partner should have a GPU with at least 8GB VRAM (or use cloud services like Colab/AWS).
-- All dependencies are listed in `requirements.txt` and `requirements-dev.txt`.
-- Dataset scripts and utilities are self-contained and documented.
-- The project is MIT licensed—free for commercial and research use.
+### 4. Generate Image (File Download)
+**POST** `/api/generate_file`
+
+Generate a pottery image and return it as a downloadable file.
+
+**Request Body:** Same as `/api/generate`
+
+**Response:** PNG image file download
 
 ---
 
-## Advanced Usage
-- **Dataset Augmentation:** `python data/augment_pottery_dataset.py`
-- **Dataset Splitting:** `python data/split_pottery_dataset.py`
-- **Dataset Statistics:** `python data/dataset_stats.py`
-- **Testing:** `pytest`
-- **Web UI:** `python app.py`
-- **LoRA Training:** See above and Hugging Face docs for latest best practices.
+### 5. Batch Generate
+**POST** `/api/batch_generate`
+
+Generate multiple pottery images from different prompts.
+
+**Request Body:**
+```json
+{
+  "prompts": [
+    "ceramic bowl with geometric patterns",
+    "terracotta pot with floral designs",
+    "modern minimalist vase"
+  ],
+  "negative_prompt": "blurry, bad quality",
+  "steps": 20,
+  "guidance_scale": 7.5
+}
+```
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "prompt": "ceramic bowl with geometric patterns",
+      "image": "data:image/png;base64,..."
+    },
+    {
+      "prompt": "terracotta pot with floral designs", 
+      "image": "data:image/png;base64,..."
+    }
+  ]
+}
+```
 
 ---
 
-## License
-This project is licensed under the MIT License. See LICENSE for details.
+## 💡 Usage Examples
+
+### Example 1: Basic Image Generation
+```bash
+curl -X POST "https://youssefabdelmaksod-pottery-img-generator.hf.space/api/generate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "prompt": "elegant ceramic vase with intricate blue and white patterns",
+    "steps": 25,
+    "guidance_scale": 8.0
+  }'
+```
+
+### Example 2: High-Quality Generation
+```bash
+curl -X POST "https://youssefabdelmaksod-pottery-img-generator.hf.space/api/generate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "prompt": "handcrafted pottery bowl with earthy glazes and rustic texture",
+    "negative_prompt": "plastic, artificial, low quality, blurry",
+    "steps": 30,
+    "guidance_scale": 9.0,
+    "seed": 123
+  }'
+```
+
+### Example 3: Batch Generation
+```bash
+curl -X POST "https://youssefabdelmaksod-pottery-img-generator.hf.space/api/batch_generate" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "prompts": [
+      "modern ceramic lamp with clean lines",
+      "traditional Japanese tea cup",
+      "decorative pottery plate with mandala patterns"
+    ],
+    "steps": 20
+  }'
+```
+
+### Example 4: Download Image File
+```bash
+curl -X POST "https://youssefabdelmaksod-pottery-img-generator.hf.space/api/generate_file" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "prompt": "artisan ceramic pitcher with handle",
+    "steps": 25
+  }' \
+  --output pottery_image.png
+```
 
 ---
 
-## Notes
-- You will need a GPU for best performance.
-- For custom fine-tuning, see `data/` and `models/` folders.
-- For LoRA training, cloud GPU is recommended for low VRAM laptops.
+## 🎨 Prompt Tips
+
+### Good Prompts for Pottery:
+- "handcrafted ceramic bowl with earth tones"
+- "elegant porcelain vase with delicate floral patterns"  
+- "rustic terracotta pot with textured surface"
+- "modern minimalist ceramic sculpture"
+- "traditional pottery with geometric tribal patterns"
+
+### Style Keywords:
+- **Materials**: ceramic, porcelain, terracotta, stoneware, earthenware
+- **Styles**: modern, traditional, rustic, elegant, minimalist, decorative
+- **Patterns**: geometric, floral, tribal, mandala, abstract, striped
+- **Colors**: earth tones, blue and white, monochrome, glazed, matte
+- **Textures**: smooth, textured, crackled, glossy, rustic
+
+### Negative Prompt Suggestions:
+- "plastic, artificial, low quality, blurry, distorted"
+- "broken, cracked, damaged, poor craftsmanship"
+- "cartoon, unrealistic, oversaturated"
+
+---
+
+## ⚙️ Technical Details
+
+- **Base Model**: Stable Diffusion v1.5
+- **Fine-tuning**: LoRA (Low-Rank Adaptation)
+- **Scheduler**: DPM Solver Multistep
+- **Device**: CPU optimized for Hugging Face Spaces
+- **Image Format**: PNG
+- **Default Resolution**: 512x512 pixels
+
+---
+
+## 🔧 Error Handling
+
+### Common Error Responses:
+
+**400 Bad Request:**
+```json
+{
+  "error": "No prompt provided"
+}
+```
+
+**500 Internal Server Error:**
+```json
+{
+  "error": "Model inference failed"
+}
+```
+
+### Response Times:
+- Health check: < 1 second
+- Image generation: 30-120 seconds (depending on steps and complexity)
+- Batch generation: Proportional to number of images
+
+---
+
+## 📝 Notes
+
+- The model is specialized for pottery and ceramic objects
+- Higher `steps` values (20-30) produce better quality but take longer
+- `guidance_scale` between 7-10 usually works best
+- Use specific, descriptive prompts for best results
+- Seed values enable reproducible generation
+
+---
+
+## 🤝 Support
+
+For issues or questions, please check the Space logs or contact the Space owner.
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference

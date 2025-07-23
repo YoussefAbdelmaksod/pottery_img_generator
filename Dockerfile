@@ -13,7 +13,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all necessary files
-COPY docker/app.py .
+COPY app.py .
 COPY pipeline/ ./pipeline/
 COPY lora-output/ ./lora-output/
 COPY adapter_config.json .
@@ -21,16 +21,19 @@ COPY adapter_config.json .
 # Create directories
 RUN mkdir -p /tmp
 
-# Expose port
+# Expose port (Hugging Face Spaces uses 7860)
 EXPOSE 7860
 
-# Set environment variables
+# Set environment variables to use /tmp for caching (writable in Hugging Face Spaces)
 ENV PYTHONPATH=/app
-ENV TORCH_HOME=/app/torch_cache
-ENV HF_HOME=/app/hf_cache
+ENV TORCH_HOME=/tmp/torch_cache
+ENV HF_HOME=/tmp/hf_cache
+ENV TRANSFORMERS_CACHE=/tmp/transformers_cache
+ENV HF_HUB_CACHE=/tmp/hf_hub_cache
 
-# Create cache directories
-RUN mkdir -p /app/torch_cache /app/hf_cache
+# Create cache directories in /tmp with proper permissions
+RUN mkdir -p /tmp/torch_cache /tmp/hf_cache /tmp/transformers_cache /tmp/hf_hub_cache && \
+    chmod -R 777 /tmp
 
 # Run the application
 CMD ["python", "app.py"]
