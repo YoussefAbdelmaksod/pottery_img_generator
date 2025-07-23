@@ -1,13 +1,13 @@
 # ---
 title: Pottery Image Generator
-emoji: 3FA
+emoji: "🪴"
 colorFrom: indigo
 colorTo: blue
 sdk: gradio
 sdk_version: "4.16.0"
 app_file: app.py
 pinned: false
----
+# ---
 # Pottery Image Generation with Stable Diffusion
 
 This project leverages state-of-the-art text-to-image diffusion models (Stable Diffusion and variants) to generate high-resolution, realistic images of pottery. It is designed for designers, archaeologists, educators, artists, and 3D modelers.
