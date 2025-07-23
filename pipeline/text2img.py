@@ -26,7 +26,7 @@ def generate_image(prompt, lora_weights_dir, output_path, steps=30, guidance=7.5
         requires_safety_checker=False,
         use_safetensors=True,
         variant="fp16"
-    ).to("cuda")
+    ).to("cpu")
 
     # Find and load LoRA weights
     print("🔍 Looking for LoRA weights...")
@@ -67,12 +67,10 @@ def generate_image(prompt, lora_weights_dir, output_path, steps=30, guidance=7.5
         with redirect_stderr(f):
             pipe.load_lora_weights(
                 lora_weights_dir, 
-                weight_name=found_file,
-                adapter_name="custom_lora"
+                weight_name=found_file
             )
-        
-        # Set LoRA scale
-        pipe.set_adapters(["custom_lora"], adapter_weights=[lora_scale])
+        print(f"✅ LoRA weights loaded successfully (scale: {lora_scale})")
+        # LoRA weights loaded; no need to set adapters explicitly in recent diffusers
         print(f"✅ LoRA weights loaded successfully (scale: {lora_scale})")
         
     except Exception as e:

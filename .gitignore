@@ -1,0 +1,22 @@
+# Ignore data directory
+/data/
+
+# Ignore LoRA logs
+lora-output/logs/
+
+# Ignore Python cache and environment files
+__pycache__/
+*.pyc
+*.pyo
+*.env
+.env
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore model weights (optional, if you don't want to push them)
+lora-output/*.safetensors

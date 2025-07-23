@@ -8,3 +8,7 @@ diffusers[torch]
 safetensors
 Pillow
 googletrans
+gradio
+peft>=0.4.0
+flask
+flask-cors

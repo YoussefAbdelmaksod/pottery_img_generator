@@ -21,7 +21,7 @@ project-root/
 ├── models/
 │   ├── lora_utils.py                 # LoRA fine-tuning utilities (custom)
 │   └── train_lora.py                 # (Legacy) LoRA training script
-├── pottery_gradio_app.py        # Web UI for image generation
+├── app.py                       # Web UI for image generation (Gradio)
 ├── requirements.txt             # Core dependencies
 ├── requirements-dev.txt         # Dev/test dependencies
 ├── train_dreambooth_lora.py     # Official Hugging Face LoRA training script
@@ -68,7 +68,7 @@ project-root/
    ```
 4. **Web UI**
    ```bash
-   python pottery_gradio_app.py
+   python app.py
    ```
 5. **LoRA Fine-Tuning (Cloud recommended for low VRAM)**
    - Prepare: `python data/prepare_for_diffusers.py --input_dir data/pottery --output_dir data/diffusers_pottery`
@@ -105,7 +105,7 @@ project-root/
 - **Dataset Splitting:** `python data/split_pottery_dataset.py`
 - **Dataset Statistics:** `python data/dataset_stats.py`
 - **Testing:** `pytest`
-- **Web UI:** `python pottery_gradio_app.py`
+- **Web UI:** `python app.py`
 - **LoRA Training:** See above and Hugging Face docs for latest best practices.
 
 ---
